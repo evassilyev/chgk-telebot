@@ -14,17 +14,21 @@ type QuestionHandler struct {
 }
 
 type Question struct {
-	Number       string `xml:"Number"`
 	Question     string `xml:"Question"`
 	Answer       string `xml:"Answer"`
 	PassCriteria string `xml:"PassCriteria"`
 	Authors      string `xml:"Authors"`
 	Sources      string `xml:"Sources"`
-	Coumments    string `xml:"Comments"`
+	Comments     string `xml:"Comments"`
 	Notices      string `xml:"Notices"`
+	Tournament   string `xml:"tournamentTitle"`
 }
 
-func NewQuestionHandler() QuestionHandler {
+type Packet struct {
+	Questions []Question `xml:"question"`
+}
+
+func NewQuestionHandler() *QuestionHandler {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -32,17 +36,17 @@ func NewQuestionHandler() QuestionHandler {
 		},
 		Jar: jar,
 	}
-	return QuestionHandler{
+	return &QuestionHandler{
 		client: client,
 	}
 }
 
-func (qh *QuestionHandler) LoadPacket(limit int) (packet []Question, err error) {
+func (qh *QuestionHandler) LoadPacket(limit int) (packet Packet, err error) {
 	//"https://db.chgk.info/xml/random/types12/limit%d"
 	//types12 - Типы вопросов: Что? Где? Когда? | Брейн-ринг
 	data, err := qh.getXML(fmt.Sprintf("https://db.chgk.info/xml/random/types12/limit%d", limit))
 	if err != nil {
-		return nil, err
+		return Packet{}, err
 	}
 	err = xml.Unmarshal(data, &packet)
 	return
@@ -65,5 +69,4 @@ func (qh *QuestionHandler) getXML(url string) ([]byte, error) {
 	}
 
 	return data, nil
-
 }
