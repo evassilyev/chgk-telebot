@@ -4,7 +4,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"encoding/json"
-	"gopkg.in/telegram-bot-api.v4"
+	"fmt"
 )
 
 type Config struct {
@@ -31,16 +31,24 @@ func main() {
 		panic(err)
 	}
 
-	telebot, err := tgbotapi.NewBotAPI(config.Token)
-	if err != nil {
-		panic(err)
-	}
+	/*
+		telebot, err := tgbotapi.NewBotAPI(config.Token)
+		if err != nil {
+			panic(err)
+		}
+		msg := tgbotapi.NewMessage(config.Chat, "Bot started")
+		_, err = telebot.Send(msg)
+		if err != nil {
+			panic(err)
+		}
+	*/
 
-	msg := tgbotapi.NewMessage(config.Chat, "Bot started")
-	_, err = telebot.Send(msg)
+	qh := NewQuestionHandler()
+	questions, err := qh.LoadPacket(4)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(questions)
 
 	/*Program the telegram bot*/
 }

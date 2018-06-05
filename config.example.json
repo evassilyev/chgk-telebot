@@ -1,10 +1,4 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
-    "sourceMap": true
-  },
-  "exclude": [
-    "node_modules"
-  ]
+  "token":"<YOUR TOKEN THERE>",
+  "chat":<CHAT ID (int)>
 }
