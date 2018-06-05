@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -42,6 +43,9 @@ type Game struct {
 	questions    []Question
 	qind         int
 	packetLoaded bool
+	timer        *time.Timer
+	alarmTimer   *time.Timer
+	tout         time.Duration
 }
 
 func NewGame(bot *Telebot) *Game {
@@ -51,6 +55,9 @@ func NewGame(bot *Telebot) *Game {
 		questions:    []Question{},
 		qind:         0,
 		packetLoaded: false,
+		timer:        nil,
+		alarmTimer:   nil,
+		tout:         time.Minute,
 	}
 }
 
@@ -129,6 +136,12 @@ func (g *Game) parseMessage(msg *tgbotapi.Message) {
 		g.showInfo()
 	case infoB:
 		g.showInfo()
+
+	case timer:
+		g.setTimer(msg, words)
+	case timerB:
+		g.setTimer(msg, words)
+
 	default:
 		g.bot.ReplyToMessage(msg, "Не знаю такую команду!")
 	}
@@ -162,7 +175,8 @@ func (g *Game) sendHelpMessage() {
 		"%s, %s - предыдущий вопрос\n"+
 		"%s N, %s N - перейти к вопросу под номером N\n"+
 		"%s, %s - показать ответ\n"+
-		"%s - показать информацию о вопросе (автор, источники и т.д.)\n",
+		"%s - показать информацию о вопросе (автор, источники и т.д.)\n"+
+		"%s - установить таймер в минутах\n",
 		help, help2,
 		packet, packet_rus,
 		start, start_rus,
@@ -170,9 +184,32 @@ func (g *Game) sendHelpMessage() {
 		prev, prev_rus,
 		question, question_rus,
 		answer, answer_rus,
-		info)
+		info,
+		timer)
 
 	g.bot.SendMessage(helpMessage)
+}
+
+func (g *Game) setTimer(msg *tgbotapi.Message, words []string) {
+	if len(words) != 2 {
+		g.bot.ReplyToMessage(msg, "Укажите после команды (/set_timer) таймаут для таймера в минутах")
+		return
+	}
+	t, err := strconv.ParseFloat(words[1], 64)
+	if err != nil {
+		g.bot.ReplyToMessage(msg, fmt.Sprintf("Не могу распознать количество минут (%s)!", words[1]))
+		return
+	}
+
+	g.tout = time.Duration(int64(float64(time.Minute.Nanoseconds()) * t))
+	if g.timer == nil {
+		g.timer = time.NewTimer(g.tout)
+		g.alarmTimer = time.NewTimer(g.tout - (15 * time.Second))
+	} else {
+		g.timer.Reset(g.tout)
+		g.alarmTimer.Reset(g.tout - (15 * time.Second))
+	}
+	g.bot.SendMessage(fmt.Sprintf("Таймер на %.1f мин. установлен\n", t))
 }
 
 func (g *Game) load(msg *tgbotapi.Message, words []string) {
@@ -235,6 +272,20 @@ func (g *Game) showQuestion(qi int) {
 		"\n",
 		g.qind+1, g.questions[g.qind].Question)
 	g.bot.SendMessage(questionMsg)
+
+	if g.timer != nil {
+		g.timer.Reset(g.tout)
+		g.alarmTimer.Reset(g.tout)
+		go func() {
+			<-g.timer.C
+			g.showAnswer()
+		}()
+		g.alarmTimer.Reset(g.tout - (15 * time.Second))
+		go func() {
+			<-g.alarmTimer.C
+			g.bot.SendMessage("Осталось 15 секунд")
+		}()
+	}
 }
 
 func (g *Game) showAnswer() {
@@ -250,7 +301,13 @@ func (g *Game) showAnswer() {
 		g.questions[g.qind].PassCriteria,
 		g.questions[g.qind].Comments,
 		g.questions[g.qind].Notices)
+
 	g.bot.SendMessage(answerMsg)
+
+	if g.timer != nil {
+		g.timer.Stop()
+		g.alarmTimer.Stop()
+	}
 }
 
 func (g *Game) showInfo() {
