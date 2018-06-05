@@ -38,26 +38,28 @@ const (
 )
 
 type Game struct {
-	bot          *Telebot
-	qh           *QuestionHandler
-	questions    []Question
-	qind         int
-	packetLoaded bool
-	timer        *time.Timer
-	alarmTimer   *time.Timer
-	tout         time.Duration
+	bot            *Telebot
+	qh             *QuestionHandler
+	questions      []Question
+	qind           int
+	packetLoaded   bool
+	timer          *time.Timer
+	alarmTimer     *time.Timer
+	tout           time.Duration
+	lastPacketSize int
 }
 
 func NewGame(bot *Telebot) *Game {
 	return &Game{
-		bot:          bot,
-		qh:           NewQuestionHandler(),
-		questions:    []Question{},
-		qind:         0,
-		packetLoaded: false,
-		timer:        nil,
-		alarmTimer:   nil,
-		tout:         time.Minute,
+		bot:            bot,
+		qh:             NewQuestionHandler(),
+		questions:      []Question{},
+		qind:           0,
+		packetLoaded:   false,
+		timer:          nil,
+		alarmTimer:     nil,
+		tout:           time.Minute,
+		lastPacketSize: 0,
 	}
 }
 
@@ -147,12 +149,7 @@ func (g *Game) parseMessage(msg *tgbotapi.Message) {
 	}
 }
 
-func (g *Game) LoadPacket(qnum string) {
-	packetSize, err := strconv.Atoi(qnum)
-	if err != nil {
-		g.bot.SendMessage(fmt.Sprintf("(%s) Не могу распознать число!", qnum))
-		return
-	}
+func (g *Game) LoadPacket(packetSize int) {
 	p, err := g.qh.LoadPacket(packetSize)
 	if err != nil {
 		g.bot.SendMessage(fmt.Sprintf("Не могу загрузить пакет вопросов! Ошибка: %#v", err))
@@ -200,11 +197,17 @@ func (g *Game) setTimer(msg *tgbotapi.Message, words []string) {
 		g.bot.ReplyToMessage(msg, fmt.Sprintf("Не могу распознать количество минут (%s)!", words[1]))
 		return
 	}
+	if t <= 0.25 {
+		g.bot.ReplyToMessage(msg, fmt.Sprintf("Слишком маленькое значение таймера!"))
+		return
+	}
 
 	g.tout = time.Duration(int64(float64(time.Minute.Nanoseconds()) * t))
 	if g.timer == nil {
 		g.timer = time.NewTimer(g.tout)
 		g.alarmTimer = time.NewTimer(g.tout - (15 * time.Second))
+		g.timer.Stop()
+		g.alarmTimer.Stop()
 	} else {
 		g.timer.Reset(g.tout)
 		g.alarmTimer.Reset(g.tout - (15 * time.Second))
@@ -213,11 +216,26 @@ func (g *Game) setTimer(msg *tgbotapi.Message, words []string) {
 }
 
 func (g *Game) load(msg *tgbotapi.Message, words []string) {
-	if len(words) != 2 {
+	var (
+		packetSize int
+		err        error
+	)
+
+	if len(words) == 2 {
+		packetSize, err = strconv.Atoi(words[1])
+		if err != nil {
+			g.bot.SendMessage(fmt.Sprintf("(%s) Не могу распознать число!", words[1]))
+			return
+		}
+		g.lastPacketSize = packetSize
+	} else if g.lastPacketSize != 0 {
+		packetSize = g.lastPacketSize
+	} else {
 		g.bot.ReplyToMessage(msg, "Укажите после команды (/get_packet) , сколько вопросов нужно загрузить")
 		return
 	}
-	g.LoadPacket(words[1])
+
+	g.LoadPacket(packetSize)
 }
 
 func (g *Game) next(msg *tgbotapi.Message, words []string) {
