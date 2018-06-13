@@ -81,7 +81,7 @@ type QuestionTypes struct {
 	eru  bool
 }
 
-func (qt QuestionTypes)EncodeToUrlString()string  {
+func (qt QuestionTypes) EncodeToUrlString() string {
 	result := ""
 	if qt.www {
 		result = result + "1"
@@ -104,7 +104,7 @@ func (qt QuestionTypes)EncodeToUrlString()string  {
 	return result
 }
 
-func (qt QuestionTypes)EncodeToUserString()string  {
+func (qt QuestionTypes) EncodeToUserString() string {
 	var rarr []string
 	if qt.www {
 		rarr = append(rarr, "Что? Где? Когда?")

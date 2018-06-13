@@ -6,8 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"regexp"
+
+	"github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 //Commands
@@ -28,28 +29,27 @@ const (
 	answer_rus   = "/ответ"
 	info         = "/info"
 	timer        = "/set_timer"
-	setQtypes = "/set_question_type"
+	setQtypes    = "/set_question_type"
 	showSettings = "/show_settings"
-	about = "/about"
+	about        = "/about"
 )
 
-
 type Game struct {
-	bot            *Telebot
-	qh             *QuestionHandler
+	bot *Telebot
+	qh  *QuestionHandler
 
-	questions      []Question
-	qind           int
+	questions []Question
+	qind      int
 
-	packetLoaded   bool
-
-	timer          *time.Timer
-	alarmTimer     *time.Timer
-	tout           time.Duration
-
+	packetLoaded bool
 	lastPacketSize int
+
+	timer      *time.Timer
+	alarmTimer *time.Timer
+	tout       time.Duration
+
 	//Interactive state
-	qtWaiting bool
+	qtWaiting    bool
 	timerWaiting bool
 
 	qtypes QuestionTypes
@@ -66,8 +66,8 @@ func NewGame(bot *Telebot) *Game {
 		alarmTimer:     nil,
 		tout:           time.Minute,
 		lastPacketSize: 0,
-		qtWaiting: false,
-		timerWaiting:false,
+		qtWaiting:      false,
+		timerWaiting:   false,
 
 		qtypes: QuestionTypes{
 			www:  true,
@@ -94,7 +94,6 @@ func (g *Game) Play() {
 		go g.parseMessage(update.Message)
 	}
 }
-
 
 func (g *Game) parseMessage(msg *tgbotapi.Message) {
 
@@ -163,17 +162,22 @@ func (g *Game) parseMessage(msg *tgbotapi.Message) {
 	case setQtypes:
 		g.setQuestionTypes(msg)
 
+	case showSettings:
+		g.showSettings()
+	case about:
+		g.showAbout()
+
 	default:
 		g.bot.ReplyToMessage(msg, "Не знаю такую команду!")
 	}
 }
 
-func (g *Game)handleAnswerWaiting(msgText string) bool {
+func (g *Game) handleAnswerWaiting(msgText string) bool {
 	//Question types
 	if g.qtWaiting {
 		r, _ := regexp.Compile("^(/)?[1-6]+$")
 		if !r.MatchString(msgText) {
-			g.bot.SendMessage("Не могу распознать типы вопросов!\n"+msgText)
+			g.bot.SendMessage("Не могу распознать типы вопросов!\n" + msgText)
 			return true
 		}
 
@@ -266,9 +270,9 @@ func (g *Game) sendHelpMessage() {
 		"%s N, %s N - перейти к вопросу под номером N\n"+
 		"%s, %s - показать ответ\n"+
 		"%s - показать информацию о вопросе (автор, источники и т.д.)\n"+
-		"%s - установить таймер в минутах\n" +
-		"%s - установить типы вопросов для загрузки\n" +
-		"%s - показать настройки\n+" +
+		"%s - установить таймер в минутах\n"+
+		"%s - установить типы вопросов для загрузки\n"+
+		"%s - показать настройки\n+"+
 		"%s - информация о боте\n",
 		help, help2,
 		packet, packet_rus,
@@ -286,7 +290,7 @@ func (g *Game) sendHelpMessage() {
 	g.bot.SendMessage(helpMessage)
 }
 
-func (g *Game)setQuestionTypes(msg *tgbotapi.Message)  {
+func (g *Game) setQuestionTypes(msg *tgbotapi.Message) {
 	message := "Отправьте сообщение, содержащее в себе цифры, где\n" +
 		"1 - Что? Где? Когда?\n" +
 		"2 - Брейн-ринг\n" +
@@ -304,7 +308,7 @@ func (g *Game) setTimer(msg *tgbotapi.Message) {
 	message := "Отправьте количество минут для таймера в следующем сообщении (Допускаются дробные величины).\n" +
 		"Сообщение отправьте с помощью \"Ответить\" на текущее, либо начав его с символа \"/\".\n"
 	g.bot.ReplyToMessage(msg, message)
-	g.timerWaiting= true
+	g.timerWaiting = true
 
 	if g.timer != nil {
 		g.timer.Stop()
@@ -439,4 +443,21 @@ func (g *Game) showInfo() {
 		g.questions[g.qind].Authors,
 		g.questions[g.qind].Sources)
 	g.bot.SendMessage(answerMsg)
+}
+
+func (g *Game) showSettings()  {
+	message := fmt.Sprintf("Текущие настройки:" +
+		"Вопросов в пакете загружается: %d\n" +
+		"Таймер устанавливается на: %s\n" +
+		"Загружаются вопросы типов: %s\n",
+		g.lastPacketSize,
+		g.tout.String(),
+		g.qtypes.EncodeToUserString())
+	g.bot.SendMessage(message)
+}
+
+func (g *Game) showAbout()  {
+	message := fmt.Sprintf("Версия: %s\n" +
+		"Исходник: %s\n", version, sourcesUrl)
+	g.bot.SendMessage(message)
 }
