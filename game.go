@@ -205,6 +205,9 @@ func (g *Game) handleAnswerWaiting(msgText string) bool {
 		g.qtypes = qt
 
 		g.qtWaiting = false
+
+		g.bot.SendMessage(fmt.Sprintf("Установлены следующие типы загружаемых вопросов: %s\n", g.qtypes.EncodeToUserString()))
+
 		return true
 	}
 
@@ -272,7 +275,7 @@ func (g *Game) sendHelpMessage() {
 		"%s - показать информацию о вопросе (автор, источники и т.д.)\n"+
 		"%s - установить таймер в минутах\n"+
 		"%s - установить типы вопросов для загрузки\n"+
-		"%s - показать настройки\n+"+
+		"%s - показать настройки\n"+
 		"%s - информация о боте\n",
 		help, help2,
 		packet, packet_rus,
@@ -446,7 +449,7 @@ func (g *Game) showInfo() {
 }
 
 func (g *Game) showSettings()  {
-	message := fmt.Sprintf("Текущие настройки:" +
+	message := fmt.Sprintf("Текущие настройки:\n" +
 		"Вопросов в пакете загружается: %d\n" +
 		"Таймер устанавливается на: %s\n" +
 		"Загружаются вопросы типов: %s\n",
