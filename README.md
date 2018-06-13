@@ -1,7 +1,7 @@
 # chgk-telebot
 Telegram bot for "What? Where? When?" gaming.
 
-Телеграм бот для игры в "Что? Где? Когда?".
+[Телеграм бот для игры в "Что? Где? Когда?"](https://github.com/evassilyev/chgk-telebot#%D0%91%D0%BE%D1%82-%D0%B4%D0%BB%D1%8F-%D0%B8%D0%B3%D1%80%D1%8B-%D0%B2-%D0%A7%D1%82%D0%BE-%D0%93%D0%B4%D0%B5-%D0%9A%D0%BE%D0%B3%D0%B4%D0%B0)
 
 ### Description
 
@@ -13,7 +13,7 @@ You can configure the timer duration and the number of the questions in the set.
 
 1. [Create your telegram bot](https://core.telegram.org/bots#3-how-do-i-create-a-bot) or use already created if you have it. Create the group chat for gaming and add your bot there. 
    You need to know the token of your bot and the group chat ID. 
-   You can get the token by @BotFather. The chat ID you can get by using follow link: https:\//api.telegram.org/bot*YourBOTToken*/getUpdates. In the JSON responce you will find the ID of the group chat. Usually it is a negative integer number.
+   You can get the token by @BotFather. The chat ID you can get by using follow link: `https://api.telegram.org/bot*YourBOTToken*/getUpdates`. In the JSON responce you will find the ID of the group chat. Usually it is a negative integer number.
 1. Prepare the configuration file. Download _config.example.json_, rename it to _config.json_. Then, write your bot's token (in the double quotes) and the chat ID (just like a number) there.
 1. Download the executable file from the _Builds/v1.0/_ folder and place it in the same directory with the configuration file _config.json_.
 1. Just run it as a console application. You can set the path to configuration file using the _-config_ console argument.
@@ -53,7 +53,7 @@ Before the play you should load the set of questions by the comand **/get_packet
 
 1. Для начала вам необходимо [создать Телеграм бота](https://core.telegram.org/bots#3-how-do-i-create-a-bot) или использовать уже имеющийся. Создайте групповой чат в Телеграм и добавьте туда своего бота.
    Вам необходимо узнать токен вашего бота и идентификатор группового чата. Токен бота можно получить при помощи служебного бота _@BotFather_ (Им вы уже пользовались при создании своего бота).
-   Идентификатор группового чата вы можете получить, пройдя по ссылке https:\//api.telegram.org/bot*YourBOTToken*/getUpdates в которой вам необходимо предварительно заменить YourBOTToken на токен вашего бота.
+   Идентификатор группового чата вы можете получить, пройдя по ссылке `https://api.telegram.org/bot*YourBOTToken*/getUpdates` в которой вам необходимо предварительно заменить YourBOTToken на токен вашего бота.
    Ссылка вернет вам структуру в формате JSON, где вы сможете найти идентификатор группового чата, в который вы добавили бота. Обычно это целое отрицательное число.
 1. Далее, подготовьте конфигурационный файл. Скачайте или скорпируйте из репозитория файл _config.example.json_, переименуйте его в _config.json_, затем, впишите в него в двойных кавычках токен вашего бота и идентификатор группового чата.
 1. Загрузите готовый исполняемый файл из папки _Builds/v1.0/_ и разместите его в одной папке с конфигурационным файлом _config.json_.
