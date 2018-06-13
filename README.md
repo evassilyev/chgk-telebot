@@ -1,19 +1,23 @@
 # chgk-telebot
-Telegram bot for "What? Where? When?" gaming.
+Telegram bot for "What? Where? When?" game.
 
 [Телеграм бот для игры в "Что? Где? Когда?"](https://github.com/evassilyev/chgk-telebot#%D0%91%D0%BE%D1%82-%D0%B4%D0%BB%D1%8F-%D0%B8%D0%B3%D1%80%D1%8B-%D0%B2-%D0%A7%D1%82%D0%BE-%D0%93%D0%B4%D0%B5-%D0%9A%D0%BE%D0%B3%D0%B4%D0%B0)
 
 ### Description
 
 The bot lets you to play "What? Where? When?" in the group Telegram chat in a text mode. 
-It downloads the set of the questions from [the questions database](https://db.chgk.info) and shows you them one by one hiding answers until your request or a timer finish. 
-You can configure the timer duration and the number of the questions in the set. All management and configuration provides by text commands in the Telegram chat.
+It downloads the set of questions from [the questions database](https://db.chgk.info) and shows them to you one by one hiding answers until your request or until the time is over. 
+You can configure the timer duration and the number of questions in the set. 
+The whole interaction and configuration process is carried out via text commands in the Telegram chat.
 
 ### Installation
 
-1. [Create your telegram bot](https://core.telegram.org/bots#3-how-do-i-create-a-bot) or use already created if you have it. Create the group chat for gaming and add your bot there. 
+1. [Create your telegram bot](https://core.telegram.org/bots#3-how-do-i-create-a-bot) or use the one you already have. 
+   Create a group chat for gaming and add your bot there. 
    You need to know the token of your bot and the group chat ID. 
-   You can get the token by @BotFather. The chat ID you can get by using follow link: `https://api.telegram.org/bot*YourBOTToken*/getUpdates`. In the JSON responce you will find the ID of the group chat. Usually it is a negative integer number.
+   You can get the token by @BotFather (You have already used it while creating your bot). 
+   You can get the chat ID by following the link: `https://api.telegram.org/bot*YourBOTToken*/getUpdates`, where you need to change the _YourBOTToken_ to the token of your bot beforehands. 
+   In the JSON responce you will find the ID of the group chat. Usually it is a negative integer number.
 1. Prepare the configuration file. Download _config.example.json_, rename it to _config.json_. Then, write your bot's token (in the double quotes) and the chat ID (just like a number) there.
 1. Download the executable file from the _Builds/v1.0/_ folder and place it in the same directory with the configuration file _config.json_.
 1. Just run it as a console application. You can set the path to configuration file using the _-config_ console argument.
@@ -25,7 +29,7 @@ Before the play you should load the set of questions by the comand **/get_packet
 
 ##### List of commands
 
-* __/?__ __/HELP__ - show the help
+* __/?__ __/HELP__ - show help on commands
 * __/get_packet N__ __/получить_пакет N__ - load the packet of N questions
 * __/start__ __/начать__ - start the game
 * __/next__ __/след__ - go to the next question
@@ -37,9 +41,9 @@ Before the play you should load the set of questions by the comand **/get_packet
 
 ### Notes 
 
-* In the first questions set loading you have to mandatory set the number of questions. In the next loading questions number will be the same as it was during the previous one by default. 
-* Minimal timer value is 0.25 (15 seconds).
-* The application loads the random set of questions for the all store period. All the questions in the set has a random complexity and just types "What? Where? When?" and "Brain-ring".
+* When loading the questions set for the first time after launching the application you have to set the number of questions. In the next loading the number of questions will be the same as it was during the previous loading by default.
+* Minimal timer value is 0.25 (15 seconds). After setting the timer for the first time it is impossible to switch it off. You can imitate the switching off by setting the timer for a big period.
+* The application loads the random sets of questions for the whole store period. All the questions in the set have a random complexity and only two types: "What? Where? When?" and "Brain-ring".
 
 # Бот для игры в "Что? Где? Когда?"
 ### Описание
