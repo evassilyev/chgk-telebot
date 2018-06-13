@@ -41,7 +41,7 @@ type Game struct {
 	questions []Question
 	qind      int
 
-	packetLoaded bool
+	packetLoaded   bool
 	lastPacketSize int
 
 	timer      *time.Timer
@@ -393,7 +393,7 @@ func (g *Game) showQuestion(qi int) {
 	questionMsg := fmt.Sprintf("Вопрос №%d\n"+
 		"%s\n"+
 		"\n",
-		g.qind+1, g.questions[g.qind].Question)
+		g.qind+1, g.questions[g.qind].ParsedQuestion())
 	g.bot.SendMessage(questionMsg)
 
 	if g.timer != nil {
@@ -448,10 +448,10 @@ func (g *Game) showInfo() {
 	g.bot.SendMessage(answerMsg)
 }
 
-func (g *Game) showSettings()  {
-	message := fmt.Sprintf("Текущие настройки:\n" +
-		"Вопросов в пакете загружается: %d\n" +
-		"Таймер устанавливается на: %s\n" +
+func (g *Game) showSettings() {
+	message := fmt.Sprintf("Текущие настройки:\n"+
+		"Вопросов в пакете загружается: %d\n"+
+		"Таймер устанавливается на: %s\n"+
 		"Загружаются вопросы типов: %s\n",
 		g.lastPacketSize,
 		g.tout.String(),
@@ -459,8 +459,8 @@ func (g *Game) showSettings()  {
 	g.bot.SendMessage(message)
 }
 
-func (g *Game) showAbout()  {
-	message := fmt.Sprintf("Версия: %s\n" +
+func (g *Game) showAbout() {
+	message := fmt.Sprintf("Версия: %s\n"+
 		"Исходник: %s\n", version, sourcesUrl)
 	g.bot.SendMessage(message)
 }

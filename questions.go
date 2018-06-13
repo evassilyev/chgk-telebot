@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
+	"regexp"
 	"strings"
 )
 
@@ -23,6 +24,17 @@ type Question struct {
 	Comments     string `xml:"Comments"`
 	Notices      string `xml:"Notices"`
 	Tournament   string `xml:"tournamentTitle"`
+}
+
+func (q Question) ParsedQuestion() string {
+	r, _ := regexp.Compile("\\(pic: [0-9]+\\.jpg\\)")
+	f := r.FindString(q.Question)
+	if f == "" {
+		return q.Question
+	}
+
+	url := "https://db.chgk.info/images/db/%s"
+	return r.ReplaceAllString(q.Question, fmt.Sprintf(url, f[6:len(f)-1]))
 }
 
 type Packet struct {
