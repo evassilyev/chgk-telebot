@@ -35,18 +35,27 @@ const (
 	infoB        = "/info@CheGKBot"
 	timer        = "/set_timer"
 	timerB       = "/set_timer@CheGKBot"
+	setQtypes	= "/set_question_types"
+	setQtypesB	= "/set_question_types@CheGKBot"
 )
 
 type Game struct {
 	bot            *Telebot
 	qh             *QuestionHandler
+
 	questions      []Question
 	qind           int
+
 	packetLoaded   bool
+
 	timer          *time.Timer
 	alarmTimer     *time.Timer
 	tout           time.Duration
+
 	lastPacketSize int
+	//Interactive state
+	qtWaiting bool
+	timerWaiting bool
 }
 
 func NewGame(bot *Telebot) *Game {
@@ -60,6 +69,8 @@ func NewGame(bot *Telebot) *Game {
 		alarmTimer:     nil,
 		tout:           time.Minute,
 		lastPacketSize: 0,
+		qtWaiting: false,
+		timerWaiting:false,
 	}
 }
 
@@ -78,7 +89,13 @@ func (g *Game) Play() {
 	}
 }
 
+
 func (g *Game) parseMessage(msg *tgbotapi.Message) {
+
+	if g.handleAnswerWaiting(msg.Text) {
+		return
+	}
+
 	words := strings.Split(msg.Text, " ")
 	if len(words) == 0 {
 		g.bot.ReplyToMessage(msg, "Command handling error")
@@ -144,9 +161,30 @@ func (g *Game) parseMessage(msg *tgbotapi.Message) {
 	case timerB:
 		g.setTimer(msg, words)
 
+	case setQtypes:
+		g.setQuestionTypes(msg)
+	case setQtypesB:
+		g.setQuestionTypes(msg)
+
 	default:
 		g.bot.ReplyToMessage(msg, "Не знаю такую команду!")
 	}
+}
+
+func (g *Game)handleAnswerWaiting(msgText string) bool {
+	if g.qtWaiting {
+		fmt.Println(msgText)
+
+		g.qtWaiting = false
+		return true
+	}
+
+	if g.timerWaiting {
+
+		g.timerWaiting = false
+		return true
+	}
+	return false
 }
 
 func (g *Game) LoadPacket(packetSize int) {
@@ -185,6 +223,12 @@ func (g *Game) sendHelpMessage() {
 		timer)
 
 	g.bot.SendMessage(helpMessage)
+}
+
+func (g *Game)setQuestionTypes(msg *tgbotapi.Message)  {
+	g.qtWaiting = true
+	g.bot.ReplyToMessage(msg, "Ответьте на это сообщение")
+	return
 }
 
 func (g *Game) setTimer(msg *tgbotapi.Message, words []string) {
