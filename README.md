@@ -41,6 +41,7 @@ Before the play you should load the set of questions by the comand **/get_packet
 * Minimal timer value is 0.25 (15 seconds).
 * The application loads the random set of questions for the all store period. All the questions in the set has a random complexity and just types "What? Where? When?" and "Brain-ring".
 
+#Бот для игры в "Что? Где? Когда?"
 ### Описание
 
 Телеграм бот позволяет вам играть в _"Что? Где? Когда?"_ прямо в групповом чате Телеграм. 
