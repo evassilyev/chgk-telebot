@@ -393,7 +393,7 @@ func (g *Game) showQuestion(qi int) {
 	questionMsg := fmt.Sprintf("Вопрос №%d\n"+
 		"%s\n"+
 		"\n",
-		g.qind+1, g.questions[g.qind])
+		g.qind+1, g.questions[g.qind].Question)
 	g.bot.SendMessage(questionMsg)
 
 	if g.timer != nil {
