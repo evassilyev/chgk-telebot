@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
+	"regexp"
+	"strings"
 )
 
 type QuestionHandler struct {
@@ -22,6 +24,17 @@ type Question struct {
 	Comments     string `xml:"Comments"`
 	Notices      string `xml:"Notices"`
 	Tournament   string `xml:"tournamentTitle"`
+}
+
+func (q Question) ParsedQuestion() string {
+	r, _ := regexp.Compile("\\(pic: [0-9]+\\.jpg\\)")
+	f := r.FindString(q.Question)
+	if f == "" {
+		return q.Question
+	}
+
+	url := "https://db.chgk.info/images/db/%s"
+	return r.ReplaceAllString(q.Question, fmt.Sprintf(url, f[6:len(f)-1]))
 }
 
 type Packet struct {
@@ -41,10 +54,10 @@ func NewQuestionHandler() *QuestionHandler {
 	}
 }
 
-func (qh *QuestionHandler) LoadPacket(limit int) (packet Packet, err error) {
+func (qh *QuestionHandler) LoadPacket(limit int, qt QuestionTypes) (packet Packet, err error) {
 	//"https://db.chgk.info/xml/random/types12/limit%d"
 	//types12 - Типы вопросов: Что? Где? Когда? | Брейн-ринг
-	data, err := qh.getXML(fmt.Sprintf("https://db.chgk.info/xml/random/types12/limit%d", limit))
+	data, err := qh.getXML(fmt.Sprintf("https://db.chgk.info/xml/random/types%s/limit%d", qt.EncodeToUrlString(), limit))
 	if err != nil {
 		return Packet{}, err
 	}
@@ -69,4 +82,60 @@ func (qh *QuestionHandler) getXML(url string) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+type QuestionTypes struct {
+	www  bool
+	br   bool
+	intt bool
+	bes  bool
+	myg  bool
+	eru  bool
+}
+
+func (qt QuestionTypes) EncodeToUrlString() string {
+	result := ""
+	if qt.www {
+		result = result + "1"
+	}
+	if qt.br {
+		result = result + "2"
+	}
+	if qt.intt {
+		result = result + "3"
+	}
+	if qt.bes {
+		result = result + "4"
+	}
+	if qt.myg {
+		result = result + "5"
+	}
+	if qt.eru {
+		result = result + "6"
+	}
+	return result
+}
+
+func (qt QuestionTypes) EncodeToUserString() string {
+	var rarr []string
+	if qt.www {
+		rarr = append(rarr, "Что? Где? Когда?")
+	}
+	if qt.br {
+		rarr = append(rarr, "Брейн-ринг")
+	}
+	if qt.intt {
+		rarr = append(rarr, "Интернет")
+	}
+	if qt.bes {
+		rarr = append(rarr, "Бескрылка")
+	}
+	if qt.myg {
+		rarr = append(rarr, "Своя игра")
+	}
+	if qt.eru {
+		rarr = append(rarr, "Эрудитка")
+	}
+	result := strings.Join(rarr, ", ")
+	return result
 }

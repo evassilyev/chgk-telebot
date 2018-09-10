@@ -6,6 +6,11 @@ import (
 	"encoding/json"
 )
 
+const (
+	version = "1.1 Alpha"
+	sourcesUrl = "https://github.com/evassilyev/chgk-telebot"
+)
+
 type Config struct {
 	Token string `json:"token"`
 	Chat int64 `json:"chat"`
