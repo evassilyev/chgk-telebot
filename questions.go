@@ -26,15 +26,20 @@ type Question struct {
 	Tournament   string `xml:"tournamentTitle"`
 }
 
-func (q Question) ParsedQuestion() string {
-	r, _ := regexp.Compile("\\(pic: [0-9]+\\.jpg\\)")
-	f := r.FindString(q.Question)
-	if f == "" {
-		return q.Question
-	}
+func (q *Question) ParsePictures() {
+	q.Question = parsePicture(q.Question)
+	q.Answer = parsePicture(q.Answer)
+	q.Comments = parsePicture(q.Comments)
+}
 
+func parsePicture(raw string) string {
+	r, _ := regexp.Compile("\\(pic: [0-9]+\\.jpg\\)")
+	f := r.FindString(raw)
+	if f == "" {
+		return raw
+	}
 	url := "https://db.chgk.info/images/db/%s"
-	return r.ReplaceAllString(q.Question, fmt.Sprintf(url, f[6:len(f)-1]))
+	return r.ReplaceAllString(raw, fmt.Sprintf(url, f[6:len(f)-1]))
 }
 
 type Packet struct {
@@ -62,6 +67,9 @@ func (qh *QuestionHandler) LoadPacket(limit int, qt QuestionTypes) (packet Packe
 		return Packet{}, err
 	}
 	err = xml.Unmarshal(data, &packet)
+	for i := 0; i < len(packet.Questions); i++ {
+		packet.Questions[i].ParsePictures()
+	}
 	return
 }
 
