@@ -33,7 +33,7 @@ func (q *Question) ParsePictures() {
 }
 
 func parsePicture(raw string) string {
-	r, _ := regexp.Compile("\\(pic: [0-9]+\\.jpg\\)")
+	r, _ := regexp.Compile("\\(pic: [0-9]+\\.(jpg|gif)\\)")
 	f := r.FindString(raw)
 	if f == "" {
 		return raw
