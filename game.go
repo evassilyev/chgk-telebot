@@ -485,13 +485,19 @@ func (g *Game) showInfo() {
 }
 
 func (g *Game) showSettings() {
+	var yearSettings string
+	if g.yearFrom != "" {
+		yearSettings = fmt.Sprintf("Загружаются вопросы начиная с %s-01-01\n", g.yearFrom)
+	}
 	message := fmt.Sprintf("Текущие настройки:\n"+
 		"Вопросов в пакете загружается: %d\n"+
 		"Таймер устанавливается на: %s\n"+
-		"Загружаются вопросы типов: %s\n",
+		"Загружаются вопросы типов: %s\n" +
+		"%s",
 		g.lastPacketSize,
 		g.tout.String(),
-		g.qtypes.EncodeToUserString())
+		g.qtypes.EncodeToUserString(),
+		yearSettings)
 	g.bot.SendMessage(message)
 }
 
