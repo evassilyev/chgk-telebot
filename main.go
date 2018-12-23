@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	version = "1.2"
+	version = "1.3"
 	sourcesUrl = "https://github.com/evassilyev/chgk-telebot"
 )
 

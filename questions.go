@@ -59,10 +59,14 @@ func NewQuestionHandler() *QuestionHandler {
 	}
 }
 
-func (qh *QuestionHandler) LoadPacket(limit int, qt QuestionTypes) (packet Packet, err error) {
+func (qh *QuestionHandler) LoadPacket(limit int, qt QuestionTypes, year string) (packet Packet, err error) {
 	//"https://db.chgk.info/xml/random/types12/limit%d"
+	//https://db.chgk.info/xml/random/types12/from_2015-01-01/limit2
 	//types12 - Типы вопросов: Что? Где? Когда? | Брейн-ринг
-	data, err := qh.getXML(fmt.Sprintf("https://db.chgk.info/xml/random/types%s/limit%d", qt.EncodeToUrlString(), limit))
+	if year != "" {
+		year = fmt.Sprintf("from_%s-01-01/", year)
+	}
+	data, err := qh.getXML(fmt.Sprintf("https://db.chgk.info/xml/random/types%s/%slimit%d", qt.EncodeToUrlString(), year, limit))
 	if err != nil {
 		return Packet{}, err
 	}

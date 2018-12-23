@@ -32,6 +32,7 @@ const (
 	setQtypes    = "/set_question_type"
 	showSettings = "/show_settings"
 	about        = "/about"
+	setYear      = "/set_year_from"
 )
 
 type Game struct {
@@ -51,8 +52,10 @@ type Game struct {
 	//Interactive state
 	qtWaiting    bool
 	timerWaiting bool
+	yearWaiting  bool
 
-	qtypes QuestionTypes
+	qtypes   QuestionTypes
+	yearFrom string
 }
 
 func NewGame(bot *Telebot) *Game {
@@ -77,6 +80,7 @@ func NewGame(bot *Telebot) *Game {
 			myg:  false,
 			eru:  false,
 		},
+		yearFrom: "",
 	}
 }
 
@@ -162,6 +166,9 @@ func (g *Game) parseMessage(msg *tgbotapi.Message) {
 	case setQtypes:
 		g.setQuestionTypes(msg)
 
+	case setYear:
+		g.setYearFrom(msg)
+
 	case showSettings:
 		g.showSettings()
 	case about:
@@ -210,6 +217,22 @@ func (g *Game) handleAnswerWaiting(msgText string) bool {
 
 		return true
 	}
+	//Packet year
+	if g.yearWaiting {
+		r, _ := regexp.Compile(`^(/)?(19\d{2})|(20\d{2})$`)
+		if !r.MatchString(msgText){
+			g.bot.SendMessage("Не могу распознать год (19xx-20xx)!\n" + msgText)
+			return true
+		}
+		if strings.Index(msgText, "/") == -1 {
+			g.yearFrom = msgText
+		} else {
+			g.yearFrom = msgText[1:]
+		}
+		g.yearWaiting = false
+		g.bot.SendMessage(fmt.Sprintf("Будут загружаться вопросы не ранее: %s-01-01\n", g.yearFrom))
+		return true
+	}
 
 	if g.timerWaiting {
 		var minutes string
@@ -249,7 +272,7 @@ func (g *Game) handleAnswerWaiting(msgText string) bool {
 }
 
 func (g *Game) LoadPacket(packetSize int) {
-	p, err := g.qh.LoadPacket(packetSize, g.qtypes)
+	p, err := g.qh.LoadPacket(packetSize, g.qtypes, g.yearFrom)
 	if err != nil {
 		g.bot.SendMessage(fmt.Sprintf("Не могу загрузить пакет вопросов! Ошибка: %v", err))
 		return
@@ -257,6 +280,9 @@ func (g *Game) LoadPacket(packetSize int) {
 	g.questions = p.Questions
 	g.bot.SendMessage(fmt.Sprintf("Загружено вопросов: %d\n", len(g.questions)))
 	g.bot.SendMessage(fmt.Sprintf("Типы загруженных вопросов: %s\n", g.qtypes.EncodeToUserString()))
+	if g.yearFrom != "" {
+		g.bot.SendMessage(fmt.Sprintf("Загружены вопросы, начиная с %s-01-01\n", g.yearFrom))
+	}
 
 	g.qind = 0
 
@@ -275,6 +301,7 @@ func (g *Game) sendHelpMessage() {
 		"%s - показать информацию о вопросе (автор, источники и т.д.)\n"+
 		"%s - установить таймер в минутах\n"+
 		"%s - установить типы вопросов для загрузки\n"+
+		"%s - установить ограничение на загрузку пакетов раньше указанного года\n"+
 		"%s - показать настройки\n"+
 		"%s - информация о боте\n",
 		help, help2,
@@ -287,10 +314,19 @@ func (g *Game) sendHelpMessage() {
 		info,
 		timer,
 		setQtypes,
+		setYear,
 		showSettings,
 		about)
 
 	g.bot.SendMessage(helpMessage)
+}
+
+func (g *Game)setYearFrom(msg *tgbotapi.Message)  {
+	message := "Укажите, с какого года следует загрузить вопросы\n" +
+		"Сообщение отправьте с помощью \"Ответить\" на текущее, либо начав его с символа \"/\".\n"
+	g.bot.ReplyToMessage(msg, message)
+	g.yearWaiting = true
+	return
 }
 
 func (g *Game) setQuestionTypes(msg *tgbotapi.Message) {
@@ -449,13 +485,19 @@ func (g *Game) showInfo() {
 }
 
 func (g *Game) showSettings() {
+	var yearSettings string
+	if g.yearFrom != "" {
+		yearSettings = fmt.Sprintf("Загружаются вопросы начиная с %s-01-01\n", g.yearFrom)
+	}
 	message := fmt.Sprintf("Текущие настройки:\n"+
 		"Вопросов в пакете загружается: %d\n"+
 		"Таймер устанавливается на: %s\n"+
-		"Загружаются вопросы типов: %s\n",
+		"Загружаются вопросы типов: %s\n" +
+		"%s",
 		g.lastPacketSize,
 		g.tout.String(),
-		g.qtypes.EncodeToUserString())
+		g.qtypes.EncodeToUserString(),
+		yearSettings)
 	g.bot.SendMessage(message)
 }
 
