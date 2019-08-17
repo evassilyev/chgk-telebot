@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"fmt"
+	"html"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -30,6 +31,12 @@ func (q *Question) ParsePictures() {
 	q.Question = parsePicture(q.Question)
 	q.Answer = parsePicture(q.Answer)
 	q.Comments = parsePicture(q.Comments)
+}
+
+func (q *Question) FormatText() {
+	q.Question = html.UnescapeString(q.Question)
+	q.Answer = html.UnescapeString(q.Answer)
+	q.Comments = html.UnescapeString(q.Comments)
 }
 
 func parsePicture(raw string) string {
@@ -73,6 +80,7 @@ func (qh *QuestionHandler) LoadPacket(limit int, qt QuestionTypes, year string) 
 	err = xml.Unmarshal(data, &packet)
 	for i := 0; i < len(packet.Questions); i++ {
 		packet.Questions[i].ParsePictures()
+		packet.Questions[i].FormatText()
 	}
 	return
 }
